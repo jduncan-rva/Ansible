@@ -4,6 +4,12 @@
   remote_user: ec2-user
   become: yes
   vars_prompt:
+    - name: aws_region
+      prompt: Which AWS Region?
+      default: us-west-2
+    - name: aws_credential
+      prompt: Which AWS User?
+      default: ec2-jduncan
     - name: tower_cli_host
       prompt: What is the Tower hostname?
       default: ansible-tower.c2spaas.com

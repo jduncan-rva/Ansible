@@ -1,6 +1,4 @@
 
-aws_region: us-west-2
-aws_credential: ec2-jduncan
 lab_user_credential: ansible-lab-instances
 lab_admin_credentials: ansible-lab-admin
 notifications:

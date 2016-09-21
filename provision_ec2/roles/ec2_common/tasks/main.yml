@@ -2,12 +2,12 @@
 - name: create ec2 instance
   ec2:
     keypair: ansible-lab-instances
-    type: t2.small
-    image: ami-ca56b5aa
-    region: us-west-2
+    type: {{ type }}
+    image: {{ image }}
+    region: {{ region }}
     count: "{{ ec2_instance_count | int }}"
-    group_id: sg-921030f4
-    vpc_subnet_id: subnet-7f611a1b
+    group_id: {{ group_id }}
+    vpc_subnet_id: {{ vpc_subnet_id }}
     assign_public_ip: yes
     instance_tags:
       Name: "{{ tower_user_name }}-lab"
