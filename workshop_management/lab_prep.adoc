@@ -7,8 +7,6 @@ v1.0: Lab Prep and Training Document
 :toc2: left
 :iconsdir: http://people.redhat.com/~jduncan/images/icons
 :imagesdir: https://s3.amazonaws.com/ansible-lab-images
-:location: Tysons Corner, VA
-:tower_url: https://ansible-tower.c2spaas.com
 :toclevels: 3
 :source-highlighter: highlight.js
 :numbered:
@@ -77,7 +75,7 @@ This lab is NOT a walkthrough of Ansible Tower's setup. To be honest, it's too s
 
 === End Result
 
-The Ansible Tower we set up for your lab should be available at your Tower's URL. In our case, it is usually {tower_url}.
+The Ansible Tower we set up for your lab should be available at your Tower's URL.
 
 === First Login
 
