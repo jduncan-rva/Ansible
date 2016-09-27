@@ -1,0 +1,5 @@
+image: ami-ca56b5aa
+region: us-west-2
+type: t2.small
+group_id: sg-921030f4
+vpc_subnet_id: subnet-7f611a1b

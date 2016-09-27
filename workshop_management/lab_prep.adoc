@@ -1,0 +1,224 @@
+= Automation for Everyone
+Jamie Duncan <jduncan@redhat.com>
+v1.0: Lab Prep and Training Document
+:badges:
+:icons:
+:toc-title: Agenda
+:toc2: left
+:iconsdir: http://people.redhat.com/~jduncan/images/icons
+:imagesdir: https://s3.amazonaws.com/ansible-lab-images
+:toclevels: 3
+:source-highlighter: highlight.js
+:numbered:
+
+== Pre-Requisites
+
+=== Knowledge of AWS
+
+You will need to have an AWS account with an active credit card, and a user with full admin privileges with an API access secret/key configured.
+
+=== Knowledge of Ansible Tower
+
+You should have a solid understanding (user to advanced-user level) of Ansible Tower 3.x. If not, you will have a lot of curve to pick up before leading this session for customers.
+
+=== Github
+
+This entire class is kept in a link:https://github.com/jduncan-rva/ansible-workshop[Github repository]. For a given class you will create a branch and make any documentation changes you need to customize it. So you will need a Github account and some knowledge of Github workflows.
+
+==== Making it Your Own
+
+You are welcome to fork this into your own repository. What we do ask is that you be a good steward of Open Source.
+
+==== Submitting changes
+
+If you make changes to the lab itself or the accompanying documentation, please create a Pull Request on the repository linked above. This is a team sport.
+
+== Amazon Setup
+
+=== SSH Keys
+
+This lab will require 2 SSH key pairs to be present and available in your AWS account.
+
+.ansible-lab-instances
+This SSH key is used by the people running the lab to access the Tower instance. It is NOT shared with lab attendees.
+
+.ansible-lab-public
+This is the SSH key that is used by the participants in the lab. It will be disseminated to all of the lab attendees so they can ssh into their instances.
+
+=== Tower Instance
+
+==== Instance Size
+
+For this lab, we will be using Ansible Tower 3.0.x, which is the latest production release. We are running it in an  link:https://aws.amazon.com/ec2/instance-types/[`m4.xlarge`] AWS instance.
+
+==== VPC Subnet
+
+While it is not required, if you have a busy AWS account that you are creating this lab in, it would make sense to isolate the lab instances on their own VPC subnet. You can do this when you spin up the instance.
+
+==== DNS
+
+If you have a domain associated with your AWS account on Route 53, it will save you time and effort to create an `A` record or a `CNAME` record to point to your instance. You don't have to use Route 53, of course. Any publicly available domain will also suffice.
+
+== Installing Ansible Tower
+
+This lab is NOT a walkthrough of Ansible Tower's setup. To be honest, it's too simple.
+
+* get a system of correct size
+* register it with Red Hat
+* subscribe it to the proper channels
+* download a tarball containing the Ansible setup scripts
+* fill a few variables out in an inventory file
+* run `setup.sh`
+
+[TIP]
+`setup.sh` just calls a playbook that deploys Ansible Tower. Total setup for this lab took approximately 45 minutes, end-to-end.
+
+=== End Result
+
+The Ansible Tower we set up for your lab should be available at your Tower's URL.
+
+=== First Login
+
+You know you were successful if you are able to browse to your Tower's hostname and get something like
+
+image::figure1.png[title="Ansible Tower Login Screen"]
+
+To log in, you use the admin password you set in your inventory file. It's just that easy!
+
+== Bootstrap Script
+
+The bootstrap script takes your newly-installed Tower Server and configures it for the lab. A quick summary of what it does:
+
+* Install `ansible-tower-cli` via `pip`
+* Configures `tower-cli` for use with the admin user/pass combination specified
+* Creates Organizations
+* Creates Teams
+* Creates Projects
+* Creates users
+* Associates Users with Organizations
+* Creates an AWS Inventory for each user
+* Configures the Inventory
+* (Optional) Creates a Slack Notification Template
+
+[IMPORTANT]
+The automation here will increase over time, assuming we keep evolving this lab.
+
+=== Running the bootstrap script
+
+==== Editing your inventory file
+
+Inside the `workshop_managemnt` directory, edit the `inventory` file to point to your Tower Server by IP or hostname.
+
+....
+[tower]
+$Elastic_IP_of_your_tower_server
+....
+
+==== Executing the bootstrap script
+
+The bootstrap script is, of course, an Ansible playbook. To run the bootstrap:
+
+....
+$ cd workshop_managemnt
+$ ansible-playbook -i inventory bootstrap-tower.yml
+....
+
+You will be prompted for a handful of values for your AWS account, Tower admin username, etc.
+
+ * AWS region
+ * AWS username
+ * Tower host
+ * Tower user
+ * Tower password
+ * Slack token
+
+=== Slack notifications
+
+One of the cooler features of Tower is the ability to quickly set up Notification Templates. An easy (and sizzly) one to show off is Slack. Essentially you create a slack account, enable a bot there, and give Tower the API access.
+
+The process is documented in the link:http://docs.ansible.com/ansible-tower/3.0.1/html/userguide/notifications.html#slack[Tower Documentation].
+
+This is optional for the lab. If you want to not create the Slack integration add `--skip-tags "slack"` when you run the bootstrap playbook.
+
+== Generating The Lab Documents
+
+These docs are kept in asciidoc format.
+
+=== Installing asciidoc
+Wherever you have this repository checked out, you need to install asciidoctor.
+
+[TIP]
+asciidoctor is available in the default Fedora repositories
+
+....
+$ yum -y install asciidoctor
+....
+
+=== Rendering HTML Lab Documents
+
+Once you have `asciidoctor` installed you can render the lab documentation after you have customized it to your needs.
+
+....
+$ cd lab_docs
+$ asciidoctor -a stylesheet=asciidoc.css lab.adoc -o index.html
+....
+
+This will create `index.html` in the `lab_docs` directory. You can upload this file to any web server.
+
+[IMPORTANT]
+The graphics in the lab documents require web access. Since this lab is in AWS that shouldn't be a problem.
+
+=== Web Version
+
+Once you have created `index.html` you can upload it to any web server you have access to. This isn't provided by the lab, but you could stand up an AWS instance or create an instance on link:https://www.openshift.com[OpenShift] and upload your page there.
+
+=== Hard Copies
+
+If you want to create hard copies of the lab documents, the CSS should handle printing well from a web browser. You can print them out ahead of time for your lab participants.
+
+== Lab Room Preparation
+
+=== Private Key for Accessing Instances
+
+This will have to be handled out-of-band somewhere. There are a lot of options to provide a password-protected file to people in the room. Among them:
+
+ * Apache with `.htaccess` - https://davidwalsh.name/password-protect-directory-using-htaccess
+ * Dropbox - https://www.dropbox.com/en/help/5887
+
+Add the `ansible-lab-public` private key to something that is password-protected and provide it to your classroom at the beginning so they can get it added to their laptops.
+
+=== Adding SSH Keys to Putty
+
+Let's face it. Most of our customers have Windows laptops. That means they are going to be using Putty (most of the time) for SSH sessions. Here's a quick link to link:https://www.howtoforge.com/ssh_key_based_logins_putty[adding SSH keys to Putty].
+
+=== Tower Username / Password for Students
+
+The bootstrap script creates a list of users, `student1, student2, etc...`. The password is the same, or can be set to anything in the vars file for the `workshop_managemnt` role. Prior to the class, print out these user/password combinations on paper or small labels and place one at each seat.
+
+[TIP]
+If marketing is involved and there are name badges, this could be incorporated into their name badge as well. This hasn't been done yet, but is totally doable.
+
+== Customizing The Example Playbooks
+
+The playbook that the lab participants will use to create EC2 instances has variables that are dependent on values from your own AWS instance. An example of this is the subnet ID for the subnet you want the students to create AWS Instances on.
+
+The documentation for Ansible link:http://docs.ansible.com/ansible/ec2_module.html[ec2 module] gives further information on where this information can be obtained from your EC2 Control Panel.
+
+You will need to edit this file to match your environment.
+
+....
+$ cat provision_ec2/roles/ec2_common/vars/main.yml
+
+image: ami-ca56b5aa
+region: us-west-2
+type: t2.small
+group_id: sg-921030f4
+vpc_subnet_id: subnet-7f611a1b
+....
+
+[IMPORTANT]
+The default values in this file WILL NOT WORK IN YOUR AWS ACCOUNT!
+
+== Summary
+
+This document should be a solid start for anyone who wants to succeed using the lab that Jamie Duncan, Tyler Cross, and Bill Hirsch have developed. Please don't take it as an exhaustive list of instructions. If you find errors please submit an issue on Github or email one of the people above and we can continue to work to make it better.
